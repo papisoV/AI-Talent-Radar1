@@ -1,0 +1,26 @@
+name: Hourly Talent Radar
+on:
+  schedule:
+    - cron: '0 * * * *' # 每小时执行
+  workflow_dispatch: # 支持手动点一下测试
+
+jobs:
+  run-radar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Execute Sensor
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        run: python radar.py
