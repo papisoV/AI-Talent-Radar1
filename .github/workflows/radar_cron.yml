@@ -1,10 +1,11 @@
 name: AI-Talent-Radar-Sniper
+
 on:
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *' # 每小时运行一次
+  workflow_dispatch: # 支持手动触发
 
-permissions:  # 在这里显式声明权限
+permissions:
   contents: write
 
 jobs:
@@ -28,22 +29,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          TZ: Asia/Shanghai # 设置虚拟机时区
         run: python radar.py
 
       - name: Update README
         run: |
-          echo "## 📡 实时监控日志" > README.md
+          echo "# 📡 AI 猎头定向狙击雷达" > README.md
+          echo "本系统每小时自动扫描 GitHub 顶级架构与 Web3 项目的 Star 异动，识别跨界高价值人才。" >> README.md
           if [ -f run_log.txt ]; then
             cat run_log.txt >> README.md
-          else
-            echo "- 😴 暂无新增高价值动态" >> README.md
           fi
-          echo -e "\n---\n*Last Updated: $(date)*" >> README.md
+          echo -e "\n---\n*自动更新于: $(date +'%Y-%m-%d %H:%M:%S') (北京时间)*" >> README.md
 
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add README.md
-          git commit -m "Update Radar Log: $(date)" || exit 0
-          git push
+          # 只有当 README.md 有变化时才 commit，防止报错
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update Radar Log: $(date)" && git push)
