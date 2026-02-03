@@ -4,19 +4,21 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
+permissions:  # 在这里显式声明权限
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # --- 关键：增加这一步安装 requests ---
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -34,7 +36,7 @@ jobs:
           if [ -f run_log.txt ]; then
             cat run_log.txt >> README.md
           else
-            echo "- ⚠️ No log file found." >> README.md
+            echo "- 😴 暂无新增高价值动态" >> README.md
           fi
           echo -e "\n---\n*Last Updated: $(date)*" >> README.md
 
