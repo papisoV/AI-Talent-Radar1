@@ -1,26 +1,38 @@
-name: Hourly Talent Radar
+name: AI-Talent-Radar-Sniper
 on:
   schedule:
-    - cron: '0 * * * *' # 每小时执行
-  workflow_dispatch: # 支持手动点一下测试
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
-  run-radar:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Execute Sensor
+      - name: Run Radar
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
         run: python radar.py
+
+      - name: Update README
+        run: |
+          echo "## 📡 实时监控日志" > README_TMP.md
+          cat run_log.txt >> README_TMP.md
+          echo -e "\n---\n*Last Updated: $(date)*" >> README_TMP.md
+          mv README_TMP.md README.md
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Update Radar Log: $(date)" || exit 0
+          git push
